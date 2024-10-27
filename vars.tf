@@ -16,7 +16,7 @@ variable "PATH_TO_PUBLIC_KEY" {
 
 variable "aws_region" {
   description = "AWS region for deployment"
-  
+  default     = "us-east-1"
 }
 
 variable "vpc_cidr_block" {
