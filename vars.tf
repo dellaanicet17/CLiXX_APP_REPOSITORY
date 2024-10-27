@@ -1,6 +1,6 @@
-variable "AWS_ACCESS_KEY" {}
+#variable "AWS_ACCESS_KEY" {}
 
-variable "AWS_SECRET_KEY" {}
+#variable "AWS_SECRET_KEY" {}
 
 variable "AWS_REGION" {
   default = "us-east-1"
@@ -90,45 +90,55 @@ variable "db_instance_class" {
 
 variable "key_pair_name" {
   description = "Key pair name for EC2 instances"
+  default     = "stack_devops_kp"
 }
 
 variable "db_instance_identifier" {
   description = "RDS DB instance identifier"
+  default     = "wordpressdbclixx"
 }
 
 variable "db_snapshot_identifier" {
   description = "RDS DB snapshot identifier"
+  default     = "arn:aws:rds:us-east-1:043309319757:snapshot:wordpressdbclixx-ecs-snapshot-copy"
 }
 
 variable "certificate_arn" {
   description = "ARN of the SSL certificate for HTTPS listener"
+  default     = "arn:aws:acm:us-east-1:043309319757:certificate/1e2f9427-2612-4811-9eb9-682ef736ad48"
 }
 
 variable "hosted_zone_id" {
   description = "Route 53 hosted zone ID"
+  default     = "Z022607324NJ585R59I5F"
 }
 
 variable "record_name" {
   description = "DNS record name for the load balancer"
+  default     = "EFS_operations"
 }
 
 variable "iam_instance_profile" {
   description = "IAM role for EC2 Instance deployment"
+  default     = "test.clixx-wdella.com"
 }
 
 variable "rds_endpoint" {
   description = "rds endpoint address for wordpress db instance"
+  default     = "wordpressdbclixx.cj0yi4ywm61r.us-east-1.rds.amazonaws.com"
 }
 
 variable "efs_mount_point" {
   description = "mount point for efs"
+  default     = "/var/www/html"
 }
 
 variable "db_username" {
   description = "Database username"
+  default     = "wordpressuser"
 }
 
 variable "db_password" {
   description = "Database password"
+  default     = "W3lcome123"
 }
-
