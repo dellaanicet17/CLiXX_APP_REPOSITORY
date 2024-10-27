@@ -34,6 +34,13 @@ pipeline {
          stage('Terraform apply'){
               steps {
                 sh '''
+                if [[ $ACTION == 'apply' ]]
+                then
+                    terraform apply -auto-approve
+                elif [[ $ACTION == 'destroy' ]]
+                then
+                    terraform destroy -auto-approve
+                fi
                   terraform apply -auto-approve
                 '''
               }
@@ -46,3 +53,11 @@ pipeline {
         def tfHome= tool name: 'terraform-14', type: 'terraform'
         return tfHome
     }
+
+if [[ $ACTION == 'apply' ]]
+                then
+                    terraform apply -auto-approve
+                elif [[ $ACTION == 'destroy' ]]
+                then
+                    terraform destroy -auto-approve
+                fi

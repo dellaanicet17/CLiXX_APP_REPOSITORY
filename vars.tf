@@ -115,12 +115,12 @@ variable "hosted_zone_id" {
 
 variable "record_name" {
   description = "DNS record name for the load balancer"
-  default     = "EFS_operations"
+  default     = "test.clixx-wdella.com"
 }
 
 variable "iam_instance_profile" {
   description = "IAM role for EC2 Instance deployment"
-  default     = "test.clixx-wdella.com"
+  default     = "EFS_operations"
 }
 
 variable "rds_endpoint" {
