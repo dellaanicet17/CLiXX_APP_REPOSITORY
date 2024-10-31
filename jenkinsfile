@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PATH = "${PATH}:${getTerraformPath()}"
+    
        
     }
     stages{
@@ -36,12 +37,10 @@ pipeline {
                 sh '''
                 if [[ $ACTION == 'apply' ]]
                 then
-                    terraform apply -auto-approve
-                elif [[ $ACTION == 'destroy' ]]
-                then
-                    terraform destroy -auto-approve
+                    terraform $ACTION -auto-approve
+                else
+                    terraform $ACTION -auto-approve
                 fi
-                  terraform apply -auto-approve
                 '''
               }
         }       
@@ -54,10 +53,4 @@ pipeline {
         return tfHome
     }
 
-if [[ $ACTION == 'apply' ]]
-                then
-                    terraform apply -auto-approve
-                elif [[ $ACTION == 'destroy' ]]
-                then
-                    terraform destroy -auto-approve
-                fi
+
