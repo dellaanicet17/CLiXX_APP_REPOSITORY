@@ -31,6 +31,7 @@ resource "aws_subnet" "stack_subnet2_pub" {
   }
 }
 
+
 # --- Private Subnets ---
 resource "aws_subnet" "stack_subnet_priv1_webapp" {
   vpc_id            = aws_vpc.mystack_vpc.id
@@ -73,6 +74,26 @@ resource "aws_subnet" "stack_subnet_priv2_app_db" {
 }
 
 resource "aws_subnet" "stack_subnet_priv1_oracle_db" {
+
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub1_cidr_block_oracle_db
+  availability_zone = var.priv_az_1
+
+  tags = {
+    Name = "MYSTACKPRIVSUB1-ORACLE-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv2_oracle_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_oracle_db
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "MYSTACKPRIVSUB2-ORACLE-DB"
+  }
+}
+
   vpc_id            = aws_vpc.mystack_vpc.id
   cidr_block        = var.priv_sub1_cidr_block_oracle_db
   availability_zone = var.priv_az_1
@@ -196,6 +217,92 @@ resource "aws_route_table" "stack_pub_rt1" {
 resource "aws_route_table_association" "stack_pub_rt1_assoc1" {
   subnet_id      = aws_subnet.stack_subnet1_pub.id
   route_table_id = aws_route_table.stack_pub_rt1.id
+
+}
+
+# Public Route Table 2
+resource "aws_route_table" "stack_pub_rt2" {
+  vpc_id = aws_vpc.mystack_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.stack_igw.id
+  }
+
+  tags = {
+    Name = "MYSTACKPUB-RT2"
+  }
+}
+# --- Route Table Associations for Public Route Table 2 ---
+resource "aws_route_table_association" "stack_pub_rt2_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet2_pub.id
+  route_table_id = aws_route_table.stack_pub_rt2.id
+}
+
+# --- Private Route Tables ---
+# Private Route Table1
+
+resource "aws_route_table" "stack_priv_rt1" {
+  vpc_id = aws_vpc.mystack_vpc.id
+
+  tags = {
+    Name = "MYSTACKPRIV-RT1"
+  }
+}
+
+# --- Route Table Associations for Private Route Table 1 ---
+resource "aws_route_table_association" "stack_priv_rt1_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_webapp.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc2" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_app_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc3" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_oracle_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc4" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_java_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc5" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_java_app.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route" "private_route1_nat_gw1" {
+  route_table_id         = aws_route_table.stack_priv_rt1.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.stack_nat_gw1.id
+}
+
+# Private Route Table2
+resource "aws_route_table" "stack_priv_rt2" {
+  vpc_id = aws_vpc.mystack_vpc.id
+
+  tags = {
+    Name = "MYSTACKPRIV-RT2"
+  }
+}
+
+# --- Route Table Associations for Private Route Table2 ---
+resource "aws_route_table_association" "stack_priv_rt2_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_webapp.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt2_assoc2" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_app_db.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+
 }
 
 # Public Route Table 2
