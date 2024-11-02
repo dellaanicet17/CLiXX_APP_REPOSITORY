@@ -8,21 +8,22 @@ resource "aws_vpc" "mystack_vpc" {
   }
 }
 
-# --- Create two Public Subnets (in Availability Zones a and b) ---
-resource "aws_subnet" "mystack_subnet_pub1" {
+# --- Public Subnets ---
+resource "aws_subnet" "stack_subnet1_pub" {
   vpc_id            = aws_vpc.mystack_vpc.id
-  cidr_block        = var.public_subnet_cidr_block_1
-  availability_zone = var.public_az_1
+  cidr_block        = var.pub_sub1_cidr_block
+  availability_zone = var.pub_az_1
   map_public_ip_on_launch = true
 
   tags = {
     Name = "MYSTACKPUBSUB1"
   }
 }
-resource "aws_subnet" "mystack_subnet_pub2" {
+
+resource "aws_subnet" "stack_subnet2_pub" {
   vpc_id            = aws_vpc.mystack_vpc.id
-  cidr_block        = var.public_subnet_cidr_block_2
-  availability_zone = var.public_az_2
+  cidr_block        = var.pub_sub2_cidr_block
+  availability_zone = var.pub_az_2
   map_public_ip_on_launch = true
 
   tags = {
@@ -30,99 +31,341 @@ resource "aws_subnet" "mystack_subnet_pub2" {
   }
 }
 
-# --- Create two Private Subnets (in Availability Zones a and b) ---
-resource "aws_subnet" "mystack_subnet_priv1" {
+# --- Private Subnets ---
+resource "aws_subnet" "stack_subnet_priv1_webapp" {
   vpc_id            = aws_vpc.mystack_vpc.id
-  cidr_block        = var.private_subnet_cidr_block_1
-  availability_zone = var.private_az_1
+  cidr_block        = var.priv_sub1_cidr_block_webapp
+  availability_zone = var.priv_az_1
 
   tags = {
-    Name = "MYSTACKPRIVSUB1"
-  }
-}
-resource "aws_subnet" "mystack_subnet_priv2" {
-  vpc_id            = aws_vpc.mystack_vpc.id
-  cidr_block        = var.private_subnet_cidr_block_2
-  availability_zone = var.private_az_2
-
-  tags = {
-    Name = "MYSTACKPRIVSUB2"
+    Name = "MYSTACKPRIVSUB1-WEBAPP"
   }
 }
 
-# --- Internet Gateway and Route Tables ---
-resource "aws_internet_gateway" "mystack_igw" {
+resource "aws_subnet" "stack_subnet_priv2_webapp" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_webapp
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "SMYSTACKPRIVSUB2-WEBAPP"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv1_app_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub1_cidr_block_app_db
+  availability_zone = var.priv_az_1
+
+  tags = {
+    Name = "MYSTACKPRIVSUB1-APP-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv2_app_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_app_db
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "MYSTACKPRIVSUB2-APP-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv1_oracle_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub1_cidr_block_oracle_db
+  availability_zone = var.priv_az_1
+
+  tags = {
+    Name = "MYSTACKPRIVSUB1-ORACLE-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv2_oracle_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_oracle_db
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "MYSTACKPRIVSUB2-ORACLE-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv1_java_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub1_cidr_block_java_db
+  availability_zone = var.priv_az_1
+
+  tags = {
+    Name = "MYSTACKPRIVSUB1-JAVA-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv2_java_db" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_java_db
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "MYSTACKPRIVSUB2-JAVA-DB"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv1_java_app" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub1_cidr_block_java_app
+  availability_zone = var.priv_az_1
+
+  tags = {
+    Name = "MYSTACKPRIVSUB1-JAVA-APP"
+  }
+}
+
+resource "aws_subnet" "stack_subnet_priv2_java_app" {
+  vpc_id            = aws_vpc.mystack_vpc.id
+  cidr_block        = var.priv_sub2_cidr_block_java_app
+  availability_zone = var.priv_az_2
+
+  tags = {
+    Name = "MYSTACKPRIVSUB2-JAVA-APP"
+  }
+}
+
+# --- Internet Gateway ---
+resource "aws_internet_gateway" "stack_igw" {
   vpc_id = aws_vpc.mystack_vpc.id
   
   tags = {
     Name = "MYSTACKIGW"
   }
 }
-resource "aws_route_table" "mystack_pub_rt" {
+
+# --- NAT Gateways ---
+resource "aws_nat_gateway" "stack_nat_gw1" {
+  allocation_id = aws_eip.nat_eip1.id
+  subnet_id    = aws_subnet.stack_subnet1_pub.id
+
+  tags = {
+    Name = "MYSTACKNAT-GW1"
+  }
+}
+
+resource "aws_nat_gateway" "stack_nat_gw2" {
+  allocation_id = aws_eip.nat_eip2.id
+  subnet_id    = aws_subnet.stack_subnet2_pub.id
+
+  tags = {
+    Name = "MYSTACKNAT-GW2"
+  }
+}
+
+# --- Elastic IPs for NAT Gateways ---
+resource "aws_eip" "nat_eip1" {
+  domain = "vpc"
+
+  tags = {
+    Name = "MYSTACKNAT-EIP1"
+  }
+}
+
+resource "aws_eip" "nat_eip2" {
+  domain  = "vpc"
+
+  tags = {
+    Name = "MYSTACKNAT-EIP2"
+  }
+}
+
+# --- Public Route Tables ---
+# Public Route Table 1
+resource "aws_route_table" "stack_pub_rt1" {
   vpc_id = aws_vpc.mystack_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.mystack_igw.id
+    gateway_id = aws_internet_gateway.stack_igw.id
   }
 
   tags = {
-    Name = "MYSTACKPUBRT"
+    Name = "MYSTACKPUB-RT1"
   }
 }
-resource "aws_route_table_association" "mystack_pub_rt_assoc1" {
-  subnet_id      = aws_subnet.mystack_subnet_pub1.id
-  route_table_id = aws_route_table.mystack_pub_rt.id
+
+# --- Route Table Associations for Public Route Table 1 ---
+resource "aws_route_table_association" "stack_pub_rt1_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet1_pub.id
+  route_table_id = aws_route_table.stack_pub_rt1.id
 }
-resource "aws_route_table_association" "mystack_pub_rt_assoc2" {
-  subnet_id      = aws_subnet.mystack_subnet_pub2.id
-  route_table_id = aws_route_table.mystack_pub_rt.id
+
+# Public Route Table 2
+resource "aws_route_table" "stack_pub_rt2" {
+  vpc_id = aws_vpc.mystack_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.stack_igw.id
+  }
+
+  tags = {
+    Name = "MYSTACKPUB-RT2"
+  }
 }
-resource "aws_route_table" "mystack_priv_rt" {
+# --- Route Table Associations for Public Route Table 2 ---
+resource "aws_route_table_association" "stack_pub_rt2_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet2_pub.id
+  route_table_id = aws_route_table.stack_pub_rt2.id
+}
+
+# --- Private Route Tables ---
+# Private Route Table1
+
+resource "aws_route_table" "stack_priv_rt1" {
   vpc_id = aws_vpc.mystack_vpc.id
 
   tags = {
-    Name = "MYSTACKPRIVRT"
+    Name = "MYSTACKPRIV-RT1"
   }
 }
-resource "aws_route_table_association" "mystack_priv_rt_assoc1" {
-  subnet_id      = aws_subnet.mystack_subnet_priv1.id
-  route_table_id = aws_route_table.mystack_priv_rt.id
+
+# --- Route Table Associations for Private Route Table 1 ---
+resource "aws_route_table_association" "stack_priv_rt1_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_webapp.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
 }
-resource "aws_route_table_association" "mystack_priv_rt_assoc2" {
-  subnet_id      = aws_subnet.mystack_subnet_priv2.id
-  route_table_id = aws_route_table.mystack_priv_rt.id
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc2" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_app_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
 }
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc3" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_oracle_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc4" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_java_db.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt1_assoc5" {
+  subnet_id      = aws_subnet.stack_subnet_priv1_java_app.id
+  route_table_id = aws_route_table.stack_priv_rt1.id
+}
+
+resource "aws_route" "private_route1_nat_gw1" {
+  route_table_id         = aws_route_table.stack_priv_rt1.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.stack_nat_gw1.id
+}
+
+# Private Route Table2
+resource "aws_route_table" "stack_priv_rt2" {
+  vpc_id = aws_vpc.mystack_vpc.id
+
+  tags = {
+    Name = "MYSTACKPRIV-RT2"
+  }
+}
+
+# --- Route Table Associations for Private Route Table2 ---
+resource "aws_route_table_association" "stack_priv_rt2_assoc1" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_webapp.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt2_assoc2" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_app_db.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt2_assoc3" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_oracle_db.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt2_assoc4" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_java_db.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route_table_association" "stack_priv_rt2_assoc5" {
+  subnet_id      = aws_subnet.stack_subnet_priv2_java_app.id
+  route_table_id = aws_route_table.stack_priv_rt2.id
+}
+
+resource "aws_route" "private_route2_nat_gw2" {
+  route_table_id         = aws_route_table.stack_priv_rt2.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.stack_nat_gw2.id
+}
+
 
 # --- Security Groups ---
-resource "aws_security_group" "mystack_sg" {
+resource "aws_security_group" "bastion_sg" {
   vpc_id = aws_vpc.mystack_vpc.id
-  name   = "MYSTACKSG"
+  name   = "MYSTACKBASTION-SG"
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] ##########
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "MYSTACKBASTION-SG"
+  }
+}
+
+resource "aws_security_group" "stack_pub_sg" {
+  vpc_id = aws_vpc.mystack_vpc.id
+  name   = "MYSTACKPUB-SG"
+
+  # Ingress rule to allow SSH from the bastion hosts
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+    # Ingress rule to allow ping (ICMP) from the bastion hosts
+  ingress {
+    from_port   = -1  # ICMP type (-1 allows all ICMP types)
+    to_port     = -1  # Same as above
+    protocol    = "icmp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+  #HTTP
+  ingress { 
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  #HTTPS
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    ingress {
+  #MYSQL/AURORA
+  ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }
+  #NFS
   ingress {
     from_port   = 2049
     to_port     = 2049
@@ -130,7 +373,7 @@ resource "aws_security_group" "mystack_sg" {
     cidr_blocks = ["10.0.0.0/16"]
   }
 
-  egress {
+  egress { #ALL TRAFFIC
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -138,29 +381,58 @@ resource "aws_security_group" "mystack_sg" {
   }
 
   tags = {
-    Name = "MYSTACKSG"
+    Name = "MYSTACKPUB-SG"
   }
 }
 
-resource "aws_security_group" "mystack_sg_priv" {
+resource "aws_security_group" "stack_priv_sg" {
   vpc_id = aws_vpc.mystack_vpc.id
-  name   = "MYSTACKSGPRIV"
+  name   = "MYSTACKPRIV-SG"
 
+  # Ingress rule to allow SSH from the bastion hosts
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+    # Ingress rule to allow ping (ICMP) from the bastion hosts
+  ingress {
+    from_port   = -1  # ICMP type (-1 allows all ICMP types)
+    to_port     = -1  # Same as above
+    protocol    = "icmp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+ #MYSQL/AURORA
   ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }
-
-  ingress {
+  #NFS
+  ingress { 
     from_port   = 2049
     to_port     = 2049
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }
+  #HTTPS
+  ingress { 
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    security_groups = [aws_security_group.stack_pub_sg.id] 
+  }
+  #HTTP
+  ingress { 
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    security_groups = [aws_security_group.stack_pub_sg.id] 
+  }
 
-  egress {
+  egress { #ALL TRAFFIC
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -168,42 +440,58 @@ resource "aws_security_group" "mystack_sg_priv" {
   }
 
   tags = {
-    Name = "MYSTACKSGPRIV"
+    Name = "MYSTACKPRIV-SG"
   }
 }
 
-# --- DB Subnet Group ---
-resource "aws_db_subnet_group" "mystack_db_subnet_group" {
-  name       = "mystack-db-subnet-group"
+
+
+# --- DB Subnet Groups ---
+resource "aws_db_subnet_group" "stack_webapp_subnet_group" {
+  name       = "stack-ha-vpc-tf-webapp-dbsubnetgroup"
   subnet_ids = [
-    aws_subnet.mystack_subnet_priv1.id,
-    aws_subnet.mystack_subnet_priv2.id
+    aws_subnet.stack_subnet_priv1_webapp.id,
+    aws_subnet.stack_subnet_priv2_webapp.id
   ]
+
   tags = {
-    Name = "MYSTACKDBSUBNETGROUP"
+    Name = "MYSTACK-WEBAPP-DBSUBNETGROUP"
   }
 }
 
-# --- RDS instance ---
-resource "aws_db_instance" "wordpress_db" {
-  identifier              = var.db_instance_identifier
-  snapshot_identifier     = var.db_snapshot_identifier
-  instance_class          = var.db_instance_class
-  vpc_security_group_ids  = [aws_security_group.mystack_sg_priv.id]  
-  availability_zone       = var.private_az_1
-  publicly_accessible     = false
-  multi_az                = false
-  skip_final_snapshot     = true
-  allocated_storage        = 20
-  engine                  = "mysql"
-  engine_version          = "8.0"
-  username                = var.db_username
-  password                = var.db_password
-  # Validate VPC ID
-  db_subnet_group_name    = aws_db_subnet_group.mystack_db_subnet_group.name
+resource "aws_db_subnet_group" "stack_app_db_subnet_group" {
+  name       = "stack-ha-vpc-tf-app_db-dbsubnetgroup"
+  subnet_ids = [
+    aws_subnet.stack_subnet_priv1_app_db.id,
+    aws_subnet.stack_subnet_priv2_app_db.id
+  ]
 
   tags = {
-    Name = "wordpressdbclixx"
+    Name = "MYSTACK-APP_DB-DBSUBNETGROUP"
+  }
+}
+
+resource "aws_db_subnet_group" "stack_oracle_db_subnet_group" {
+  name       = "stack-ha-vpc-tf-oracle_db-dbsubnetgroup"
+  subnet_ids = [
+    aws_subnet.stack_subnet_priv1_oracle_db.id,
+    aws_subnet.stack_subnet_priv2_oracle_db.id
+  ]
+
+  tags = {
+    Name = "MYSTACK-ORACLE_DB-DBSUBNETGROUP"
+  }
+}
+
+resource "aws_db_subnet_group" "stack_java_db_subnet_group" {
+  name       = "stack-ha-vpc-tf-java_db-dbsubnetgroup"
+  subnet_ids = [
+    aws_subnet.stack_subnet_priv1_java_db.id,
+    aws_subnet.stack_subnet_priv2_java_db.id
+  ]
+
+  tags = {
+    Name = "MYSTACK-JAVA_DB-DBSUBNETGROUP"
   }
 }
 
@@ -218,88 +506,94 @@ resource "aws_efs_file_system" "clixx_efs" {
     Name = "CLiXX-EFS"
   }
 }
-resource "aws_efs_mount_target" "clixx_mt_priv1" {
+
+resource "aws_efs_mount_target" "stack_efs_mt1_webapp" {
   file_system_id  = aws_efs_file_system.clixx_efs.id
-  subnet_id       = aws_subnet.mystack_subnet_priv1.id
-  security_groups = [aws_security_group.mystack_sg_priv.id]
+  subnet_id       = aws_subnet.stack_subnet_priv1_webapp.id
+  security_groups = [aws_security_group.stack_priv_sg.id]
 }
-resource "aws_efs_mount_target" "clixx_mt_priv2" {
+resource "aws_efs_mount_target" "stack_efs_mt2_webapp" {
   file_system_id  = aws_efs_file_system.clixx_efs.id
-  subnet_id       = aws_subnet.mystack_subnet_priv2.id
-  security_groups = [aws_security_group.mystack_sg_priv.id]
+  subnet_id       = aws_subnet.stack_subnet_priv2_webapp.id
+  security_groups = [aws_security_group.stack_priv_sg.id]
 }
 
-# --- Load Balancer and Target Groups ---
-resource "aws_lb_target_group" "clixx_tg" {
-  name     = "CLiXX-TG"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.mystack_vpc.id
-  target_type = "instance"
-
-  health_check {
-    healthy_threshold   = 5
-    unhealthy_threshold = 4
-    timeout             = 30
-    interval            = 120
-    path                = "/"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-  }
-
-  tags = {
-    Name = "CLiXX-TG"
-  }
-}
-resource "aws_lb" "clixx_lb" {
+#Load Balancer
+resource "aws_lb" "stack_lb" {
   name               = "CLiXX-LB"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.mystack_sg.id]
-  subnets            = [aws_subnet.mystack_subnet_pub1.id, aws_subnet.mystack_subnet_pub2.id]
+  security_groups    = [aws_security_group.stack_pub_sg.id]
+  subnets            = [aws_subnet.stack_subnet1_pub.id, aws_subnet.stack_subnet2_pub.id]
 
   enable_deletion_protection = false
 
   tags = {
     Name        = "CLiXX-LB"
-    Environment = "dev"
-  }
-}
-resource "aws_lb_listener" "http_listener" {
-  load_balancer_arn = aws_lb.clixx_lb.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.clixx_tg.arn
-  }
-}
-resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.clixx_lb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.certificate_arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.clixx_tg.arn
   }
 }
 
-# --- Route 53 Record ---
+resource "aws_instance" "bastion1" {
+  ami           = var.bastion_ami_id
+  instance_type = var.bastion_instance_type
+  subnet_id     = aws_subnet.stack_subnet1_pub.id
+  associate_public_ip_address = true
+  key_name = var.key_pair_name
+  security_groups = [aws_security_group.bastion_sg.id]
+
+  tags = {
+    Name = "MYSTACK-BASTION1"
+  }
+}
+
+resource "aws_instance" "bastion2" {
+  ami           = var.bastion_ami_id
+  instance_type = var.bastion_instance_type
+  subnet_id     = aws_subnet.stack_subnet2_pub.id
+  associate_public_ip_address = true
+  key_name = var.key_pair_name
+  security_groups = [aws_security_group.bastion_sg.id]
+
+  tags = {
+    Name = "MYSTACK-BASTION2"
+  }
+}
+
+# --- RDS instance ---
+resource "aws_db_instance" "wordpress_db" {
+  identifier              = var.db_instance_identifier
+  snapshot_identifier     = var.db_snapshot_identifier
+  instance_class          = var.db_instance_class
+  vpc_security_group_ids  = [aws_security_group.stack_priv_sg.id]
+  publicly_accessible     = false
+  multi_az                = true
+  skip_final_snapshot     = true
+
+  db_subnet_group_name    = aws_db_subnet_group.stack_webapp_subnet_group.name
+
+  tags = {
+    Name = "wordpressdbclixx"
+  }
+}
+
+# --- Route 53 Record with Geolocation Routing ---
 resource "aws_route53_record" "clixx_alb_record" {
-  zone_id = var.hosted_zone_id
+  zone_id = var.hosted_zone_id   # DNS AWS Route 53 hosted zone id
   name    = var.record_name
   type    = "A"
 
   alias {
-    name                   = aws_lb.clixx_lb.dns_name
-    zone_id                = aws_lb.clixx_lb.zone_id  #Z04517273VCLIDX9UEQR7 
-    evaluate_target_health = true
+    name                   = aws_lb.stack_lb.dns_name
+    zone_id                = aws_lb.stack_lb.zone_id
+    evaluate_target_health = false
+  }
+
+  # Specify geolocation routing policy
+  geolocation_routing_policy {
+    continent = "NA"  # Example: Route traffic from North America
   }
 }
+
 
 # --- User Data Template ---
 data "template_file" "user_data" {
@@ -314,13 +608,61 @@ data "template_file" "user_data" {
   }
 }
 
+# --- Target Groups ----
+resource "aws_lb_target_group" "clixx_tg" {
+  name     = "CLIXX-TG"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.mystack_vpc.id
+  target_type = "instance"
+
+  health_check {
+    healthy_threshold   = 5
+    unhealthy_threshold = 3
+    timeout             = 30
+    interval            = 120
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200-399"
+  }
+
+  tags = {
+    Name = "CLIXX-TG"
+  }
+}
+
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = aws_lb.stack_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.clixx_tg.arn
+  }
+}
+resource "aws_lb_listener" "https_listener" {
+  load_balancer_arn = aws_lb.stack_lb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.clixx_tg.arn
+  }
+}
+
 # --- Launch Template ---
 resource "aws_launch_template" "clixx_lt" {
-  name          = "CLiXX-LT"
+  name          = var.launch_template_name
   image_id      = var.ami_id
   instance_type = var.instance_type
   key_name      = var.key_pair_name
-  vpc_security_group_ids = [aws_security_group.mystack_sg.id]
+
+  vpc_security_group_ids = [aws_security_group.stack_priv_sg.id]
+
   user_data = base64encode(data.template_file.user_data.rendered)
 
   iam_instance_profile {
@@ -331,18 +673,18 @@ resource "aws_launch_template" "clixx_lt" {
     resource_type = "instance"
 
     tags = {
-      Name = "CLiXX-LT"
+      Name = var.launch_template_name
     }
   }
 }
 
 # --- Auto Scaling Group ---
 resource "aws_autoscaling_group" "clixx_asg" {
-  name                = "CLiXX-ASG"
+  name                = var.autoscale_group_name
   max_size            = 3
   min_size            = 1
   desired_capacity    = 1
-  vpc_zone_identifier = [aws_subnet.mystack_subnet_pub1.id, aws_subnet.mystack_subnet_pub2.id] 
+  vpc_zone_identifier = [aws_subnet.stack_subnet_priv1_webapp.id, aws_subnet.stack_subnet_priv2_webapp.id] 
   target_group_arns   = [aws_lb_target_group.clixx_tg.arn]
   health_check_type          = "EC2"
   health_check_grace_period  = 300
