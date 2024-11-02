@@ -31,6 +31,7 @@ resource "aws_subnet" "stack_subnet2_pub" {
   }
 }
 
+
 # --- Private Subnets ---
 resource "aws_subnet" "stack_subnet_priv1_webapp" {
   vpc_id            = aws_vpc.mystack_vpc.id
