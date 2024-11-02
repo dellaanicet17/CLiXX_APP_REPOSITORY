@@ -579,7 +579,7 @@ resource "aws_db_instance" "wordpress_db" {
 
 # --- Route 53 Record with Geolocation Routing ---
 resource "aws_route53_record" "clixx_alb_record" {
-  zone_id = var.hosted_zone_id   # DNS AWS Route 53 hosted zone id
+  zone_id = var.hosted_zone_id   
   name    = var.record_name
   type    = "A"
 
@@ -590,8 +590,9 @@ resource "aws_route53_record" "clixx_alb_record" {
   }
 
   # Specify geolocation routing policy
+  set_identifier = "us-east-1"
   geolocation_routing_policy {
-    continent = "NA"  # Example: Route traffic from North America
+    continent = "NA"
   }
 }
 
