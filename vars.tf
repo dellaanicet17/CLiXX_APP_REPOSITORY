@@ -153,6 +153,11 @@ variable "launch_template_name" {
   default     = "CLiXX-LT"
 }
 
+variable "load_balancer_name" {
+  description = "Name of the launch template"
+  default     = "CLiXX-LT"
+}
+
 
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
@@ -222,4 +227,9 @@ variable "db_username" {
 variable "db_password" {
   description = "Database password"
   default     = "W3lcome123"
+}
+
+variable "endpoint_email" {
+  description = "Database password"
+  default     = "dellaanicet17@gmail.com"
 }

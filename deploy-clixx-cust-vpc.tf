@@ -302,7 +302,6 @@ resource "aws_route" "private_route2_nat_gw2" {
   nat_gateway_id         = aws_nat_gateway.stack_nat_gw2.id
 }
 
-
 # --- Security Groups ---
 resource "aws_security_group" "bastion_sg" {
   vpc_id = aws_vpc.mystack_vpc.id
@@ -445,8 +444,6 @@ resource "aws_security_group" "stack_priv_sg" {
   }
 }
 
-
-
 # --- DB Subnet Groups ---
 resource "aws_db_subnet_group" "stack_webapp_subnet_group" {
   name       = "stack-ha-vpc-tf-webapp-dbsubnetgroup"
@@ -521,7 +518,7 @@ resource "aws_efs_mount_target" "stack_efs_mt2_webapp" {
 
 #Load Balancer
 resource "aws_lb" "stack_lb" {
-  name               = "CLiXX-LB"
+  name               = var.load_balancer_name
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.stack_pub_sg.id]
@@ -683,7 +680,7 @@ resource "aws_launch_template" "clixx_lt" {
 # --- Auto Scaling Group ---
 resource "aws_autoscaling_group" "clixx_asg" {
   name                = var.autoscale_group_name
-  max_size            = 3
+  max_size            = 5
   min_size            = 1
   desired_capacity    = 1
   vpc_zone_identifier = [aws_subnet.stack_subnet_priv1_webapp.id, aws_subnet.stack_subnet_priv2_webapp.id] 
@@ -701,4 +698,121 @@ resource "aws_autoscaling_group" "clixx_asg" {
     value               = "CLiXX-ASG"
     propagate_at_launch = true
   }
+}
+
+################################################################
+# Setting Diffenrent Alarm
+
+# --- Creating SNS Topic ---
+resource "aws_sns_topic" "alert_topic" {
+  name = "cloudwatch-alarm-topic"
+}
+
+# --- SNS Email Subscription ---
+resource "aws_sns_topic_subscription" "subscription_email" {
+  topic_arn = aws_sns_topic.alert_topic.arn
+  protocol  = "email"
+  endpoint  = var.endpoint_email
+}
+
+# --- RDS Database CPU Utilization Alarm ---
+resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
+  alarm_name          = "RDSHighCPUUtilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 75
+  alarm_description   = "Send an email alarming that RDS CPU Utilization exceeds 75%"
+  dimensions = {
+    DBInstanceIdentifier = var.db_instance_identifier
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
+}
+
+# --- Autoscaling Group Unhealthy Instances Alarm ---
+resource "aws_cloudwatch_metric_alarm" "asg_instances_health_check" {
+  alarm_name          = "ASGUnhealthyInstances"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "GroupUnhealthyInstances"
+  namespace           = "AWS/AutoScaling"
+  period              = 300
+  statistic           = "Minimum"
+  threshold           = 1
+  alarm_description   = "Triggered when the number of unhealthy instances in the Auto Scaling Group exceeds one."
+  dimensions = {
+    AutoScalingGroupName = var.autoscale_group_name
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
+}
+
+# --- Autoscaling Group (ASG) Maximum Size Alert ---
+resource "aws_cloudwatch_metric_alarm" "asg_max_size" {
+  alarm_name          = "ASGAtMaxSize"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "GroupInServiceInstances"
+  namespace           = "AWS/AutoScaling"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 4
+  alarm_description   = "Triggered when the Auto Scaling Group reaches or exceeds its maximum instance capacity."
+  dimensions = {
+    AutoScalingGroupName = var.autoscale_group_name
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
+}
+
+# --- Elastic Load Balancer (ELB) Unhealthy Instances Alarm ---
+resource "aws_cloudwatch_metric_alarm" "elb_hosts_healthy_check" {
+  alarm_name          = "ELBUnhealthyHostsDetected"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "UnHealthyHostCount"
+  namespace           = "AWS/ELB"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 1
+  alarm_description   = "Triggered when the number of unhealthy hosts in the ELB exceeds 1"
+  dimensions = {
+    LoadBalancerName = var.load_balancer_name
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
+}
+
+# --- Elastic File System (EFS) Usage Alert ---
+resource "aws_cloudwatch_metric_alarm" "efs_percent_used" {
+  alarm_name          = "EFSPercentUsedAlert"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "PercentUsed"
+  namespace           = "AWS/EFS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 75 
+  alarm_description   = "Alarm when EFS usage exceeds 75%"
+  dimensions = {
+    FileSystemId = aws_efs_file_system.clixx_efs.id
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
+}
+
+# --- EC2 Auto Scaling Group CPU Utilization Alarm ---
+resource "aws_cloudwatch_metric_alarm" "asg_cpu_usage" {
+  alarm_name          = "ASGHighCPUUtilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 75
+  alarm_description   = "Alarm when average CPU utilization across ASG exceeds 75%"
+  dimensions = {
+    AutoScalingGroupName = var.autoscale_group_name
+  }
+  alarm_actions = [aws_sns_topic.alert_topic.arn]
 }
