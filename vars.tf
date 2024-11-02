@@ -25,51 +25,103 @@ variable "vpc_cidr_block" {
   default     = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidr_block_1" {
+# Private Subnets
+variable "private_subnet1_cidr_block_app_db" {
   type        = string
-  description = "The CIDR block for the first public subnet"
-  default     = "10.0.1.0/24"
+  description = "The CIDR block for the private subnet application databases"
+  default     = "10.0.0.0/22"
 }
 
-variable "public_subnet_cidr_block_2" {
+variable "private_subnet2_cidr_block_app_db" {
   type        = string
-  description = "The CIDR block for the second public subnet"
-  default     = "10.0.2.0/24"
+  description = "The CIDR block for the private subnet application databases"
+  default     = "10.0.4.0/22"
 }
 
-variable "private_subnet_cidr_block_1" {
+variable "private_subnet1_cidr_block_oracle_db" {
   type        = string
-  description = "The CIDR block for the first private subnet"
-  default     = "10.0.3.0/24"
+  description = "The CIDR block for the private subnet oracle databases"
+  default     = "10.0.14.0/24"
 }
 
-variable "private_subnet_cidr_block_2" {
+variable "private_subnet2_cidr_block_oracle_db" {
   type        = string
-  description = "The CIDR block for the second private subnet"
-  default     = "10.0.4.0/24"
+  description = "The CIDR block for the private subnet oracle databases"
+  default     = "10.0.15.0/24"
 }
+
+variable "private_subnet1_cidr_block_webapp" {
+  type        = string
+  description = "The CIDR block for the private subnet webapp servers"
+  default     = "10.0.12.0/24"
+}
+
+variable "private_subnet2_cidr_block_webapp" {
+  type        = string
+  description = "The CIDR block for the private subnet webapp servers"
+  default     = "10.0.13.0/24"
+}
+
+variable "private_subnet1_cidr_block_java_db" {
+  type        = string
+  description = "The CIDR block for the first private subnet for Java databases"
+  default     = "10.0.16.0/26"
+}
+
+variable "private_subnet2_cidr_block_java_db" {
+  type        = string
+  description = "The CIDR block for the second private subnet for Java databases"
+  default     = "10.0.16.64/26"
+}
+
+# Private Subnets for Java Applications
+variable "private_subnet1_cidr_block_java_app" {
+  type        = string
+  description = "The CIDR block for the first private subnet for Java applications"
+  default     = "10.0.16.128/26"
+}
+
+variable "private_subnet2_cidr_block_java_app" {
+  type        = string
+  description = "The CIDR block for the second private subnet for Java applications"
+  default     = "10.0.16.192/26"
+}
+
+#Public Subnet
+variable "public_subnet1_cidr_block" {
+  type        = string
+  description = "The CIDR block for the public subnet"
+  default     = "10.0.8.0/23"
+}
+
+variable "public_subnet2_cidr_block" {
+  type        = string
+  description = "The CIDR block for an additional public subnet"
+  default     = "10.0.10.0/23"
+}
+
 
 variable "public_az_1" {
   type        = string
-  description = "Availability Zone for the first public subnet"
+  description = "Public Availability Zone 1"
   default     = "us-east-1a"
 }
 
 variable "public_az_2" {
   type        = string
-  description = "Availability Zone for the second public subnet"
+  description = "Public Availability Zone 2"
   default     = "us-east-1b"
 }
 
 variable "private_az_1" {
   type        = string
-  description = "Availability Zone for the first private subnet"
+  description = "Private Availability Zone 1"
   default     = "us-east-1a"
 }
 
 variable "private_az_2" {
   type        = string
-  description = "Availability Zone for the second private subnet"
+  description = "Private Availability Zone 2"
   default     = "us-east-1b"
 }
 
@@ -141,4 +193,36 @@ variable "db_username" {
 variable "db_password" {
   description = "Database password"
   default     = "W3lcome123"
+}
+
+variable "launch_template_name" {
+  description = "Name of the launch template"
+  default     = "mystack-lt"
+}
+
+variable "autoscale_group_name" {
+  description = "Name of the Auto Scaling group"
+  default     = "mystack-asg"
+}
+
+variable "vpc_private_az_1" {
+  description = "The availability zone for the private subnets."
+  type        = string
+  default = "us-east-1a"
+}
+
+variable "vpc_private_az_2" {
+  description = "The availability zone for the second private subnets."
+  type        = string
+  default = "us-east-1b"
+}
+
+variable "bastion_ami_id" {
+  description = "AMI ID for the bastion instance"
+  default = "ami-00f251754ac5da7f0"
+}
+
+variable "bastion_instance_type" {
+  description = "Instance type for the bastion instance"
+  default = "t2.micro"
 }
