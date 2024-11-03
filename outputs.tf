@@ -1,8 +1,18 @@
 # outputs.tf
 
-output "security_group_id" {
+output "Bastion_security_group_id" {
   description = "Security Group ID for the application"
-  value       = aws_security_group.mystack_sg.id
+  value       = aws_security_group.bastion_sg.id
+}
+
+output "PUBLIC_security_group_id" {
+  description = "Security Group ID for the application"
+  value       = aws_security_group.stack_pub_sg.id
+}
+
+output "Private_security_group_id" {
+  description = "Security Group ID for the application"
+  value       = aws_security_group.stack_priv_sg.id
 }
 
 output "aws_vpc" {
@@ -12,12 +22,12 @@ output "aws_vpc" {
 
 output "public_subnet_ids" {
   description = "The IDs of the public subnets"
-  value       = [aws_subnet.mystack_subnet_pub1.id, aws_subnet.mystack_subnet_pub2.id]
+  value       = [aws_subnet.stack_subnet1_pub.id, aws_subnet.stack_subnet2_pub.id]
 }
 
 output "private_subnet_ids" {
   description = "The IDs of the private subnets"
-  value       = [aws_subnet.mystack_subnet_priv1.id, aws_subnet.mystack_subnet_priv2.id]
+  value       = [aws_subnet.stack_subnet_priv1_webapp.id, aws_subnet.stack_subnet_priv2_webapp.id, aws_subnet.stack_subnet_priv1_app_db.id, aws_subnet.stack_subnet_priv2_app_db.id]
 }
 
 output "db_instance_endpoint" {
@@ -32,7 +42,7 @@ output "efs_file_system_id" {
 
 output "load_balancer_dns" {
   description = "DNS of the Application Load Balancer"
-  value       = aws_lb.clixx_lb.dns_name
+  value       = aws_lb.stack_lb.dns_name
 }
 
 output "autoscaling_group_name" {
