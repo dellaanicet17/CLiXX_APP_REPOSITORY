@@ -3,20 +3,22 @@ pipeline {
 
     environment {
         VERSION = "1.0.${BUILD_NUMBER}"
-        PATH = "${PATH}:${getSonarPath()}"
+        PATH = "${PATH}:${getSonarPath()}:${getDockerPath()}"
     }
 
     stages {
-        stage ('Sonarcube Scan') {
+        stage('SonarQube Scan') {
             steps {
                 script {
-                    scannerHome = tool 'sonarqube'
-                }
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    withSonarQubeEnv('SonarQubeScanner') {
-                        sh "${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=CliXX-APP-DELLA \
-                        -Dsonar.login=${SONAR_TOKEN}"
+                    def scannerHome = tool 'sonarqube'
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                        withSonarQubeEnv('SonarQubeScanner') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=CliXX-APP-DELLA \
+                                -Dsonar.login=${SONAR_TOKEN}
+                            """
+                        }
                     }
                 }
             }
@@ -30,28 +32,37 @@ pipeline {
             }
         }
 
-        stage ('Build Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                sh "docker build . -t clixx-image:$VERSION"
+                script {
+                    def dockerHome = tool 'docker-inst'
+                    sh "${dockerHome}/bin/docker build . -t clixx-image:$VERSION"
+                }
             }
         }
 
-        stage ('Starting Docker Image') {
+        stage('Starting Docker Image') {
             steps {
                 sh '''
-                if docker ps | grep clixx-cont; then
-                    echo "Docker container exists, stopping and removing it."
-                    docker stop clixx-cont
-                    docker rm clixx-cont
-                fi
-                docker run --name clixx-cont -p 80:80 -d clixx-image:$VERSION
+                    if docker ps | grep clixx-cont; then
+                        echo "Docker container exists, stopping and removing it."
+                        docker stop clixx-cont
+                        docker rm clixx-cont
+                    fi
+                    docker run --name clixx-cont -p 80:80 -d clixx-image:$VERSION
                 '''
             }
         }
     }
 }
 
+// Define helper functions outside the pipeline block
 def getSonarPath() {
     def SonarHome = tool name: 'sonarqube', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
     return SonarHome
+}
+
+def getDockerPath() {
+    def DockerHome = tool name: 'docker-inst', type: 'hudson.plugins.docker.DockerTool'
+    return DockerHome
 }
